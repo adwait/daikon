@@ -1,0 +1,53 @@
+input-language Uclid
+decl-version 2.0
+var-comparability implicit
+
+ppt ..fun1():::ENTER
+  ppt-type enter
+  variable ::w
+    var-kind variable
+    rep-type int
+    dec-type int
+    flags is_param
+    comparability 1
+  variable ::x
+    var-kind variable
+    rep-type int
+    dec-type int
+    flags is_param
+    comparability 1
+  variable ::y
+    var-kind variable
+    rep-type int
+    dec-type int
+    flags is_param
+    comparability 1
+  variable ::z
+    var-kind variable
+    rep-type int
+    dec-type int
+    flags is_param
+    comparability 1
+ 
+ppt ..fun1():::EXIT0
+  ppt-type enter
+  variable ::w
+    var-kind return
+    rep-type int
+    dec-type int
+    comparability 1
+  variable ::x
+    var-kind return
+    rep-type int
+    dec-type int
+    comparability 1
+  variable ::y
+    var-kind return
+    rep-type int
+    dec-type int
+    comparability 1
+  variable ::z
+    var-kind return
+    rep-type int
+    dec-type int
+    comparability 1
