@@ -28,7 +28,7 @@ ppt ..fun1():::ENTER
     dec-type int
     flags is_param
     comparability 1
- 
+
 ppt ..fun1():::EXIT0
   ppt-type enter
   variable ::w
