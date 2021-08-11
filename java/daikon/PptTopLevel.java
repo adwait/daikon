@@ -7,6 +7,7 @@ import static daikon.tools.nullness.NullnessUtil.castNonNullDeep;
 import daikon.derive.Derivation;
 import daikon.derive.binary.BinaryDerivation;
 import daikon.derive.binary.BinaryDerivationFactory;
+import daikon.derive.binary.EqualityPredicateFactory;
 import daikon.derive.binary.SequenceFloatIntersectionFactory;
 import daikon.derive.binary.SequenceFloatSubscriptFactory;
 import daikon.derive.binary.SequenceFloatUnionFactory;
@@ -736,6 +737,7 @@ public class PptTopLevel extends Ppt {
         new SequencesConcatFactory(),
         new SequencesJoinFactory(),
         new SequencesPredicateFactory(),
+        new EqualityPredicateFactory(),
       };
 
   transient TernaryDerivationFactory[] ternaryDerivations =

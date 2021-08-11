@@ -4,7 +4,7 @@ package daikon.inv.ternary.threeScalar;
 import daikon.*;
 import daikon.inv.*;
 import daikon.inv.ternary.TernaryInvariant;
-import putils.LispNode;
+import daikon.plumelib.util.FileIOException;
 
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
@@ -12,30 +12,77 @@ import org.plumelib.util.Intern;
 import typequals.prototype.qual.NonPrototype;
 import typequals.prototype.qual.Prototype;
 
+import putils.LispParser;
+import putils.LispNode;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Scanner;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+// import com.fasterxml.jackson.core.*;
+
 /**
  * Abstract base class for invariants over three numeric variables. An example is {@code z = ax + by
  * + c}.
  */
-public class Sum extends ThreeScalar {
+public class TernaryRel extends ThreeScalar {
   // We are Serializable, so we specify a version to allow changes to
   // method signatures without breaking serialization.  If you add or
   // remove fields, you should change this number to the current date.
-  static final long serialVersionUID = 20210730;
+  static final long serialVersionUID = 20210802;
 
+  public static int count = 0;
+  public static String invstub = "rel1";
   public static boolean dkconfig_enabled = Invariant.invariantEnabledDefault;
+  public static String funfile = "/home/adwait/Documents/daikonparent/daikon/synthinv/define.smt";
+  public static String resultsfile = "/home/adwait/Documents/daikonparent/daikon/synthinv/results1.json";
+  public static JSONObject obj = new JSONObject();
+  public LispNode parsed_node;
+  public final String invname;
+  private static FileWriter file;
 
-  protected Sum(PptSlice ppt) {
+  private void parse_fun() {
+    String acc = "";
+    try {
+      File myObj = new File(funfile);
+      Scanner myReader = new Scanner(myObj);
+      while (myReader.hasNextLine()) {
+        acc += myReader.nextLine();
+      }
+      myReader.close();
+    } catch (FileNotFoundException e) {
+      System.out.println("An error occurred.");
+      e.printStackTrace();
+    }
+    // System.out.println(acc);
+    LispParser parser = new LispParser();
+    this.parsed_node = parser.parse(acc);
+  }
+
+
+  protected TernaryRel(PptSlice ppt) {
     super(ppt);
+    parse_fun();
+    this.invname = invstub + String.valueOf(count);
   }
 
-  protected @Prototype Sum() {
+  protected @Prototype TernaryRel() {
     super();
+    parse_fun();
+    this.invname = invstub + String.valueOf(count);
   }
 
-  private static @Prototype Sum proto = new @Prototype Sum();
+  private static @Prototype TernaryRel proto = new @Prototype TernaryRel();
 
   /** Returns the prototype invariant. */
-  public static @Prototype Sum get_proto() {
+  public static @Prototype TernaryRel get_proto() {
     return proto;
   }
 
@@ -47,8 +94,8 @@ public class Sum extends ThreeScalar {
 
   /** instantiate an invariant on the specified slice */
   @Override
-  public Sum instantiate_dyn(@Prototype Sum this, PptSlice slice) {
-    return new Sum(slice);
+  public TernaryRel instantiate_dyn(@Prototype TernaryRel this, PptSlice slice) {
+    return new TernaryRel(slice);
   }
 
   @Override
@@ -58,8 +105,29 @@ public class Sum extends ThreeScalar {
 
   // A printed representation for user output
   @Override
-  public String format_using(@GuardSatisfied Sum this, OutputFormat format) {
-    return var1().name() + " " + var2().name() + " sum inv!" ;
+  public String format_using(@GuardSatisfied TernaryRel this, OutputFormat format) {
+    JSONArray vlist = new JSONArray();
+    vlist.add(var1().name());
+    vlist.add(var2().name());
+    vlist.add(var3().name());
+    obj.put(invname, vlist);
+    // LispParser parser = new LispParser();
+    // LispNode temp = parser.parse("(+ a b)");
+    try {
+      // TODO: need to ensure that the output is generated only once
+      file = new FileWriter(resultsfile);
+      file.write(obj.toJSONString());
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      try {
+        file.flush();
+        file.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    return var1().name() + " " + var2().name() + " ternary inv!";
   }
 
   /**
@@ -73,9 +141,15 @@ public class Sum extends ThreeScalar {
    */
   // public abstract InvariantStatus check_modified(long v1, long v2, long v3, int count);
 
+  private long evaluate(long v1, long v2) {
+    List<Long> arg_list = Arrays.asList(v1, v2);
+    return parsed_node.evaluate(arg_list);
+  }
+
+
   @Override
   public InvariantStatus check_modified(long v1, long v2, long v3, int count) {
-    if (v1 + v2 != v3) {
+    if (v3 != evaluate(v1, v2)) {
       return InvariantStatus.FALSIFIED;
     }
     return InvariantStatus.NO_CHANGE;
@@ -108,7 +182,7 @@ public class Sum extends ThreeScalar {
   // }
   @Override
   public boolean isSameFormula(Invariant other) {
-    assert other instanceof Sum;
+    assert other instanceof TernaryRel;
     return true;
   }
 
